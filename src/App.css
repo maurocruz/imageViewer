@@ -1,4 +1,6 @@
 
+body { width: 100%;}
+
 .imageGallery-background {
     position: absolute;
     background-color: rgba(0,0,0,0.75);
@@ -6,6 +8,10 @@
     left: 0;
     width: 100%;
     z-index: 100;
+    display: flex;
+    align-content: center;
+    align-items: center;
+    justify-content: center;
 }
 
 .imageGallery-container {
@@ -26,7 +32,7 @@
 }
 
 .imageGallery-arrow {
-    width: 60px;
+    width: 32px;
     background-color: rgba(255,255,255,0.3);
     position: absolute;
     top: 0;
@@ -35,10 +41,12 @@
     align-items: center;
     align-content: center;
     justify-content: center;
+    cursor: pointer;
 }
 
 .imageGallery-arrow-left {
     left: 0;
+    padding-left: 12px;
 }
 
 .imageGallery-arrow-left span {
@@ -48,6 +56,7 @@
 
 .imageGallery-arrow-right {
     right: 0;
+    padding-right: 12px;
 }
 
 .imageGallery-arrow-right span{
@@ -56,9 +65,37 @@
 }
 
 .imageGallery-arrow span {
-    border-width: 0 10px 10px 0;
+    border-width: 0 7px 7px 0;
     border-style: solid;
     border-color: rgba(0,0,0,0.75);
-    width: 30px;
-    height: 30px;
+    width: 16px;
+    height: 16px;
+}
+
+.button-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    cursor: pointer;    
+    z-index: 140;
+    width: 38px;
+    height: 29px;
+    background-color: rgba(0,0,0,0.5);
+    padding-top: 8px;
+}
+.button-close * {
+    border-width: 0 2px 2px 0;
+    border-color: rgba(255,0,0,0.75);
+    border-style: solid;
+    width: 13px;
+    height: 13px;
+    display: inline-block;
+    margin: 2px;
+}
+.button-close-right {
+    transform: rotate(135deg);
+}
+
+.button-close-left {
+    transform: rotate(-45deg);
 }

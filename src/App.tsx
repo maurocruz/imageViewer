@@ -3,16 +3,18 @@ import React, { useEffect, useState } from 'react';
 import './App.css';
 
 const App = (props:any) => {
-    const root = location.protocol+'//'+location.hostname;
-
-    const itemKey = props.item;
-    const imagesArray = props.images;
+    const imagesArray: Array<string> = props.images;
     const background: HTMLDivElement = props.target;
+
+    const totalImages = imagesArray.length;
+    const root = location.protocol+'//'+location.hostname;
   
+    const [item, setItem] = useState<number>(props.item);
     const [src, setSrc] = useState('');
-    const [top, setTop] = useState<number>(window.pageYOffset);
+    const [scrollTop, setScrollTop] = useState<number>(window.pageYOffset || document.documentElement.scrollTop);
+    const [scrollLeft, setScrollLeft] = useState<number>(window.pageXOffset || document.documentElement.scrollLeft);
     const [windowWidth, setwindowWidth] = useState<number>(document.body.offsetWidth);
-    const [windowHeight, setwindowHeight] = useState<number>(window.outerHeight);
+    const [windowHeight, setwindowHeight] = useState<number>(window.innerHeight);
     const [imageOriginalWidth, setimageOriginalWidth] = useState<number>(0);
     const [imageOriginalHeight, setimageOriginalHeight] = useState<number>(0);
     const [imageWidth, setImageWidth] = useState<number>(0);
@@ -24,26 +26,41 @@ const App = (props:any) => {
     useEffect(() => {        
         let image = new Image();
         image.onload = () => {
+            setItem(item);
             setSrc(image.src);
             setimageOriginalWidth(image.width);
             setimageOriginalHeight(image.height);
             setPosition(image.width, image.height);
         }
-        image.src = root + imagesArray[itemKey];
-    },[itemKey]);
+        image.src = root + imagesArray[item];
+    },[item]);
 
 
-    document.body.onscroll = function() {
-        setTop(window.pageYOffset); 
-    }
+    window.addEventListener('orientationchange', resize );
 
-    window.onresize = function() {
-        setwindowHeight(window.outerHeight);
+    window.onresize = resize;
+
+    window.addEventListener('scroll', function(e) {
+        setScrollTop(window.pageYOffset || document.documentElement.scrollTop);
+        setScrollLeft(window.pageXOffset || document.documentElement.scrollLeft);
+    });
+
+    document.onkeydown = function (e: any) {
+        if (e.key == "ArrowLeft" && item > 0) handlePreviousImage(e);
+        if (e.key == "ArrowRight" && item+1 < totalImages) handleNextImage(e);
+        if (e.key == "ArrowUp" || e.key == "ArrowDown") close();
+    };
+
+    function resize() {
+        setwindowHeight(window.innerHeight);
         setwindowWidth(document.body.offsetWidth);
         setPosition(imageOriginalWidth, imageOriginalHeight);
     }
 
     function setPosition(imageW: number, imageH: number) {
+        setImageWidth(imageW);
+        setImageHeight(imageH);
+
         const ratio = imageW/imageH;        
 
         if (imageH > windowHeight) {
@@ -71,31 +88,29 @@ const App = (props:any) => {
         e.stopPropagation(); 
     }
 
-    function handleArrowRightClick(e: React.MouseEvent<HTMLImageElement,MouseEvent>) {
+    function handleNextImage(e: React.MouseEvent<HTMLImageElement,MouseEvent>) {
         e.stopPropagation(); 
-        console.log(itemKey);
-        console.log(imagesArray);
+        setItem(item+1);
+        
     }
 
-    function handleArrowLeftClick(e: React.MouseEvent<HTMLImageElement,MouseEvent>) {
+    function handlePreviousImage(e: React.MouseEvent<HTMLImageElement,MouseEvent>) {
         e.stopPropagation(); 
-        console.log(itemKey);
-        console.log(imagesArray);
+        setItem(item-1);
     }
 
-    function handleBackgroundClick() { 
+
+    function close() { 
         background.style.display = "none";
     }
 
     // STYLES
     const backgroundStyle = {
-        top: Math.round(top)+"px",
-        height: windowHeight+"px"
-
+        top: Math.round(scrollTop)+"px",
+        height: windowHeight+"px",
+        width: windowWidth+'px'
     }
     const containerStyle = {
-        marginTop: Math.round(imageMarginTop)+'px',
-        marginLeft: Math.round(imageMarginLeft)+'px',
         maxHeight: windowHeight+'px'
     }
 
@@ -107,14 +122,33 @@ const App = (props:any) => {
         height: imageHeight+'px'
     }
 
-    /*<div className="imageGallery-arrow imageGallery-arrow-left" style={arrow} onClick={handleArrowLeftClick}><span></span></div>
-    <img className="imageGallery-img" src={src} style={imgStyle} id="imageGallery-img"/>
-    <div className="imageGallery-arrow imageGallery-arrow-right" style={arrow} onClick={handleArrowRightClick}><span></span></div>*/
+    const ArroWLeft = () => {
+        if (item == 0) return <></>; 
+        return ( <div className="imageGallery-arrow imageGallery-arrow-left" style={arrow} onClick={handlePreviousImage}><span></span></div> );
+    };
+
+    const ArrowRight = () => {
+        if (item+1 == totalImages) return <></>;
+        return ( <div className="imageGallery-arrow imageGallery-arrow-right" style={arrow} onClick={handleNextImage}><span></span></div> );
+    };
+    
+    const ButtonClose = () => {
+        return (
+            <div className="button-close" onClick={close}>
+                <div className="button-close-left"></div>
+                <div className="button-close-right"></div>
+            </div>
+        );
+    };
+
     return (
         <>
-            <div className="imageGallery-background" style={backgroundStyle} onClick={handleBackgroundClick} >
+            <div className="imageGallery-background" style={backgroundStyle} onClick={close} >
                 <div className="imageGallery-container" style={containerStyle}>
+                    <ButtonClose/>
+                    <ArroWLeft/>                    
                     <img className="imageGallery-img" src={src} style={imgStyle} id="imageGallery-img" onClick={handleImageClick}/>
+                    <ArrowRight/>
                 </div>
             </div>
         </>
