@@ -6,7 +6,7 @@ import App from './App';
 const scope = document.getElementById('main');
 const images = scope.getElementsByTagName('img');
 const numberOfImages = images.length;
-let imagesArray = [];
+let imagesAttributes = [];
 
 // check if images exists
 if (numberOfImages > 0) {
@@ -16,13 +16,12 @@ if (numberOfImages > 0) {
 
     for (let i=0; i < images.length; i++) {
         let image = images[i];
-        let src = images[i].getAttribute('data-source');
+        imagesAttributes[i] = image.attributes;
 
         image.addEventListener('click', () => {
             backgroundOverlay.style.display = "block";
-            ReactDom.render(<App images={imagesArray} item={i} target={backgroundOverlay}/>, backgroundOverlay);
+            ReactDom.render(<App images={imagesAttributes} item={i} target={backgroundOverlay}/>, backgroundOverlay);
         });
-
-        imagesArray[i] = src;
+        
     }
 }

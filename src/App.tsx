@@ -1,16 +1,20 @@
 import React, { useEffect, useState } from 'react';
+import ReactDOM from 'react-dom';
 
 import './App.css';
 
 const App = (props:any) => {
-    const imagesArray: Array<string> = props.images;
+    const imagesAttributes: NamedNodeMap = props.images;
     const background: HTMLDivElement = props.target;
 
-    const totalImages = imagesArray.length;
+    const totalImages = imagesAttributes.length;
     const root = location.protocol+'//'+location.hostname;
-  
+    
     const [item, setItem] = useState<number>(props.item);
+    const [sizes, setSizes] = useState('');
+    const [srcset, setSrcset] = useState('');
     const [src, setSrc] = useState('');
+    const [caption, setCaption] = useState('');
     const [scrollTop, setScrollTop] = useState<number>(window.pageYOffset || document.documentElement.scrollTop);
     const [scrollLeft, setScrollLeft] = useState<number>(window.pageXOffset || document.documentElement.scrollLeft);
     const [windowWidth, setwindowWidth] = useState<number>(document.body.offsetWidth);
@@ -22,8 +26,10 @@ const App = (props:any) => {
     const [imageMarginTop, setImageMarginTop] = useState<number>(0);
     const [imageMarginLeft, setImageMarginLeft] = useState<number>(0);
     
+    const abortController = new AbortController();
+
     // FIGURE LOAD   
-    useEffect(() => {        
+    useEffect(() => {   
         let image = new Image();
         image.onload = () => {
             setItem(item);
@@ -32,29 +38,39 @@ const App = (props:any) => {
             setimageOriginalHeight(image.height);
             setPosition(image.width, image.height);
         }
-        image.src = root + imagesArray[item];
-    },[item]);
+        
+        let imageSelected = imagesAttributes[item];
+                    
+        image.src = root + imageSelected['data-source'].value;
+        setCaption(imageSelected['data-caption'].value);
 
+    },[item]);
 
     window.addEventListener('orientationchange', resize );
 
     window.onresize = resize;
 
-    window.addEventListener('scroll', function(e) {
-        setScrollTop(window.pageYOffset || document.documentElement.scrollTop);
-        setScrollLeft(window.pageXOffset || document.documentElement.scrollLeft);
-    });
+    window.onscroll = function() {
+        if (abortController.signal.aborted === false) {
+            setScrollTop(window.pageYOffset || document.documentElement.scrollTop);
+        }
+    };
 
     document.onkeydown = function (e: any) {
-        if (e.key == "ArrowLeft" && item > 0) handlePreviousImage(e);
-        if (e.key == "ArrowRight" && item+1 < totalImages) handleNextImage(e);
-        if (e.key == "ArrowUp" || e.key == "ArrowDown") close();
+        if (abortController.signal.aborted === false) {
+            if (e.key == "ArrowLeft" && item > 0) handlePreviousImage(e);
+            if (e.key == "ArrowRight" && item+1 < totalImages) handleNextImage(e);
+            if (e.key == "ArrowUp" || e.key == "ArrowDown") close();
+        }
     };
 
     function resize() {
-        setwindowHeight(window.innerHeight);
-        setwindowWidth(document.body.offsetWidth);
-        setPosition(imageOriginalWidth, imageOriginalHeight);
+        console.log(abortController.signal);
+        if (abortController.signal.aborted === false) {
+            setwindowHeight(window.innerHeight);
+            setwindowWidth(document.body.offsetWidth);
+            setPosition(imageOriginalWidth, imageOriginalHeight);
+        }
     }
 
     function setPosition(imageW: number, imageH: number) {
@@ -65,14 +81,7 @@ const App = (props:any) => {
 
         if (imageH > windowHeight) {
             imageW = ratio * windowHeight;
-            setImageHeight(windowHeight);
-            setImageWidth(imageW);
-        }
-
-        if (imageW > windowWidth) {
-            imageH = windowWidth / ratio;
-            setImageWidth(windowWidth);
-            setImageHeight(imageH);
+            //setItem(null);
         }
 
         const marginLeft = windowWidth > imageW ? (windowWidth - imageW)/2 : 0;
@@ -100,8 +109,9 @@ const App = (props:any) => {
     }
 
 
-    function close() { 
-        background.style.display = "none";
+    function close() {
+        abortController.abort();
+        ReactDOM.unmountComponentAtNode(background);
     }
 
     // STYLES
@@ -141,13 +151,23 @@ const App = (props:any) => {
         );
     };
 
+    const Img = () => {
+        return  <img className="imageGallery-img" src={src} style={imgStyle} id="imageGallery-img" onClick={handleImageClick}/>;
+    };
+
+    const Caption = () => {
+        if (caption == '') return <></>;
+        return <figcaption className="imageGallery-figcaption">{caption}</figcaption>
+    };
+
     return (
         <>
             <div className="imageGallery-background" style={backgroundStyle} onClick={close} >
                 <div className="imageGallery-container" style={containerStyle}>
                     <ButtonClose/>
                     <ArroWLeft/>                    
-                    <img className="imageGallery-img" src={src} style={imgStyle} id="imageGallery-img" onClick={handleImageClick}/>
+                    <Img/>
+                    <Caption/>
                     <ArrowRight/>
                 </div>
             </div>
