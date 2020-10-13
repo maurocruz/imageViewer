@@ -1,13 +1,13 @@
 {
-  "name": "imagegallery",
+  "name": "imageviewer",
   "version": "1.0.0",
   "description": "",
   "main": "index.tsx",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "webpack-dev-server --mode development",
-    "build-dev": "webpack --mode development && cp ./dist/bundle.js ../www/App/static/js/imageGallery.js",
-    "build": "webpack --mode production && cp ./dist/bundle.js ../www/App/static/js/imageGallery.js"
+    "build-dev": "webpack --mode development && cp ./dist/bundle.js ../www/App/static/js/imageViewer.js",
+    "build": "webpack --mode production && cp ./dist/bundle.js ../www/App/static/js/imageViewer.js"
   },
   "keywords": [],
   "author": "",
